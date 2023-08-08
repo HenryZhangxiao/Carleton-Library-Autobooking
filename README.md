@@ -35,3 +35,6 @@ The inspiration for this project comes from the tiresome process of needing to b
   - `python3 Autobook.py -r [ROOM_NUMBER] -d [DATE] -t [TIME]`
   - You can run `python3 Autobook.py -h` to print the usages for a more detailed explanation of the flags
   - You can optionally use the `--duration` flag to specify a booking duration
+  - You can optionally use the `--headless` flag to run the program headlessly
+  - An example command if you were trying to book room 570 at 10:00 AM for next Monday:
+      - `python3 Autobook.py -d monday -r 570 -t 1000 --headless`
