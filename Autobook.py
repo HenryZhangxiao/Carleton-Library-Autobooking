@@ -24,6 +24,12 @@ parser.add_argument('-r', '--room', type=str, required=True,
 parser.add_argument('-t', '--time', type=int, required=True,
                     help='The start time of your desired booking time in military hours, ie. 1800 = 6:00 PM')
 
+parser.add_argument('-u', '--username', type=str, required=False,
+                    help='Username for MC1 login. This will take precedence over credentials.py username')
+
+parser.add_argument('-p', '--password', type=str, required=False,
+                    help='Password for MC1 login. This will take precedence over credentials.py password')
+
 parser.add_argument('--duration', type=int, default=180, required=False,
                     help='Desired duration of your booking in minutes. 30 minute increments; Max 180 minutes. Default 180 minutes')
 
@@ -31,16 +37,21 @@ parser.add_argument('--headless', action='store_true', default=False, required=F
                     help='Runs the program in headless mode (Does not open the browser). Default is false')
 
 args = parser.parse_args()
-
 args.date = ' '.join(args.date)
+if args.username is not None and args.password is not None:
+    username, password = args.username, args.password
+else:
+    username, password = credentials.username, credentials.password
+
 #print("Platform: " + platform.system())
 #print("Argument values:")
 #print("Date: " + args.date)
 #print("Room: " + args.room)
 #print("Time: " + str(args.time))
+#print("Username: " + args.user)
+#print("Password: " + args.password)
 #print("Duration: " + str(args.duration))
 #print("Headless: " + str(args.headless))
-
 
 class Browser:
     browser, service, options = None, None, Options()
@@ -117,12 +128,14 @@ class Browser:
         self.add_input(by=By.ID, value='txtUsername', text=username)
         self.add_input(by=By.ID, value='txtPassword', text=password)
         self.click_button(by=By.ID, value='btnLogin')
+        time.sleep(4)
+        if self.browser.find_elements(by=By.ID, value='spanLogin'):
+            raise Exception()
+        browser.open_page('https://booking.carleton.ca/index.php?p=BookRoom&r=1')
         time.sleep(3)
 
     #Books the room
     def book_room(self, room: str, unix_timestamp: str):
-        browser.open_page('https://booking.carleton.ca/index.php?p=BookRoom&r=1')
-        time.sleep(3)
         self.add_input(by=By.ID, value='listSearch', text=room) #Search for the room
         time.sleep(1)
         self.click_button(by=By.CLASS_NAME, value='SearchHighlight') #Select the room
@@ -175,16 +188,34 @@ if __name__ == '__main__':
         browser = Browser('drivers\chromedriver_linux')
 
     print("\n-------GETTING UNIX TIMESTAMP FOR DATE-------\n")
-    unix_timestamp = browser.get_unix_timestamp()
-    print("-------------------SUCCESS-------------------\n\n")
+    try:
+        unix_timestamp = browser.get_unix_timestamp()
+        print("-------------------SUCCESS-------------------\n\n\n")
+    except:
+        print("-----------FAILED TO GET TIMESTAMP-----------\n")
+        print("---------------EXITING PROGRAM---------------\n\n")
+        exit()
 
     print("-------LOGGING INTO BOOKING.CARLETON.CA------\n")
-    browser.login_booking_carleton(credentials.username, credentials.password)
-    print("-------------------SUCCESS-------------------\n\n")
+    try:
+        browser.login_booking_carleton(username, password)
+        print("-------------------SUCCESS-------------------\n\n\n")
+    except:
+        print("---------------FAILED TO LOGIN---------------")
+        print("-----------CHECK YOUR CREDENTIALS------------\n")
+        print("---------------EXITING PROGRAM---------------\n\n")
+        exit()
 
     print("-----------ATTEMPTING TO BOOK ROOM-----------\n")
-    browser.book_room(args.room, unix_timestamp)
-    print("-------------------SUCCESS-------------------\n\n")
-
-    print("See your bookings here: https://booking.carleton.ca/index.php?p=MyBookings&r=1")
+    try:
+        browser.book_room(args.room, unix_timestamp)
+        print("-------------------SUCCESS-------------------\n\n\n")
+        print("See your bookings here: https://booking.carleton.ca/index.php?p=MyBookings&r=1\n")
+    except:
+        print("-------------FAILED TO BOOK ROOM-------------\n")
+        print("------ROOM MIGHT BE UNAVAILABLE TO BOOK------")
+        print("-------OR DESIRED TIMESLOT UNAVAILABLE-------\n")
+        print("---------------EXITING PROGRAM---------------\n\n")
+        exit()
+       
     browser.close_browser
