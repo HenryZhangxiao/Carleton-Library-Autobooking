@@ -43,9 +43,10 @@ class Browser:
     
     def __init__(self, driver: str):
         self.service = Service(driver)
-        self.options.add_argument("--headless=new")
-        self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        self.browser = webdriver.Chrome(service=self.service, options=self.options)
+        #self.options.add_argument("--headless=new")
+        #self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        #self.browser = webdriver.Chrome(service=self.service, options=self.options)
+        self.browser = webdriver.Chrome(service=self.service)
 
     #Opens the desired page to [url]
     def open_page(self, url: str):
@@ -68,18 +69,55 @@ class Browser:
         time.sleep(1)
         
     #Gets the unix timestamp for the date and returns it
-    def get_unix_timestamp(self) -> str: 
-        return self.browser.current_url.replace("https://www.unixtimesta.mp/", "")
+    def get_unix_timestamp(self) -> str:
+        match args.date.upper():
+            case "SUNDAY" | "SUN":
+                browser.open_page('https://www.unixtimesta.mp/saturday')
+                time.sleep(3)
+                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+            case "MONDAY" | "MON":
+                browser.open_page('https://www.unixtimesta.mp/sunday')
+                time.sleep(3)
+                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+            case "TUESDAY" | "TUE" | "TUES":
+                browser.open_page('https://www.unixtimesta.mp/monday')
+                time.sleep(3)
+                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+            case "WEDNESDAY" | "WED":
+                browser.open_page('https://www.unixtimesta.mp/tuesday')
+                time.sleep(3)
+                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+            case "THURSDAY" | "THU" | "THURS":
+                browser.open_page('https://www.unixtimesta.mp/wednesday')
+                time.sleep(3)
+                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+            case "FRIDAY" | "FRI":
+                browser.open_page('https://www.unixtimesta.mp/thursday')
+                time.sleep(3)
+                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+            case "SATURDAY" | "SAT":
+                browser.open_page('https://www.unixtimesta.mp/friday')
+                time.sleep(3)
+                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+            case _:
+                browser.open_page('https://www.unixtimesta.mp/' + args.date.replace(" ", ""))
+                time.sleep(3)
+                return self.browser.current_url.replace("https://www.unixtimesta.mp/", "")
 
     #Login to the booking site using the username and password found in credentials.py
     def login_booking_carleton(self, username: str, password: str):
+        browser.open_page('https://booking.carleton.ca/')
+        time.sleep(3)
         self.click_button(by=By.ID, value='spanLogin')
         self.add_input(by=By.ID, value='txtUsername', text=username)
         self.add_input(by=By.ID, value='txtPassword', text=password)
         self.click_button(by=By.ID, value='btnLogin')
+        time.sleep(3)
 
     #Books the room
     def book_room(self, room: str, unix_timestamp: str):
+        browser.open_page('https://booking.carleton.ca/index.php?p=BookRoom&r=1')
+        time.sleep(3)
         self.add_input(by=By.ID, value='listSearch', text=room) #Search for the room
         time.sleep(1)
         self.click_button(by=By.CLASS_NAME, value='SearchHighlight') #Select the room
@@ -119,6 +157,7 @@ class Browser:
         self.click_button(by=By.ID, value='btnOK')
         time.sleep(1)
         self.click_button(by=By.ID, value='btnOK')
+        time.sleep(3)
 
 # Main Function
 if __name__ == '__main__':
@@ -131,25 +170,15 @@ if __name__ == '__main__':
         browser = Browser('drivers\chromedriver_linux')
 
     print("--------GETTING UNIX TIMESTAMP FOR DATE--------\n")
-    browser.open_page('https://www.unixtimesta.mp/' + args.date.replace(" ", ""))
-    time.sleep(3)
     unix_timestamp = browser.get_unix_timestamp()
     print("--------SUCCESS--------\n\n")
 
     print("--------LOGGING INTO BOOKING.CARLETON.CA--------\n")
-    browser.open_page('https://booking.carleton.ca/')
-    time.sleep(3)
-
     browser.login_booking_carleton(credentials.username, credentials.password)
-    time.sleep(3)
     print("--------SUCCESS--------\n\n")
 
     print("--------ATTEMPTING TO BOOK ROOM--------\n")
-    browser.open_page('https://booking.carleton.ca/index.php?p=BookRoom&r=1')
-    time.sleep(3)
-
     browser.book_room(args.room, unix_timestamp)
-    time.sleep(3)
     print("--------SUCCESS--------\n\n")
 
     print("See your bookings here: https://booking.carleton.ca/index.php?p=MyBookings&r=1")
