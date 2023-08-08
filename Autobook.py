@@ -14,7 +14,7 @@ import platform
 # Instantiate the parser
 parser = argparse.ArgumentParser(description='An automated booking script for Carleton Library rooms')
 
-parser.add_argument('-d', '--date', type=str, required=True,
+parser.add_argument('-d', '--date', type=str, nargs='+', required=True,
                     help='Date of the booking. Typing the day (ex. Monday) will book the nearest next occurrence that isn\'t today.\
                           You can also type the calendar date, ie. Aug 23')
 
@@ -27,26 +27,31 @@ parser.add_argument('-t', '--time', type=int, required=True,
 parser.add_argument('--duration', type=int, default=180, required=False,
                     help='Desired duration of your booking in minutes. 30 minute increments; Max 180 minutes. Default 180 minutes')
 
+parser.add_argument('--headless', action='store_true', default=False, required=False,
+                    help='Runs the program in headless mode (Does not open the browser). Default is false')
+
 args = parser.parse_args()
 
-"""
-print("Platform: " + platform.system())
-print("Argument values:")
-print("Date: " + args.date)
-print("Room: " + args.room)
-print("Time: " + str(args.time))
-print("Duration: " + str(args.duration))
-"""
+args.date = ' '.join(args.date)
+#print("Platform: " + platform.system())
+#print("Argument values:")
+#print("Date: " + args.date)
+#print("Room: " + args.room)
+#print("Time: " + str(args.time))
+#print("Duration: " + str(args.duration))
+#print("Headless: " + str(args.headless))
+
 
 class Browser:
     browser, service, options = None, None, Options()
     
     def __init__(self, driver: str):
         self.service = Service(driver)
-        #self.options.add_argument("--headless=new")
-        #self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        #self.browser = webdriver.Chrome(service=self.service, options=self.options)
-        self.browser = webdriver.Chrome(service=self.service)
+        self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        if args.headless == True:
+            self.options.add_argument("--headless=new")
+        self.browser = webdriver.Chrome(service=self.service, options=self.options)
+        #self.browser = webdriver.Chrome(service=self.service)
 
     #Opens the desired page to [url]
     def open_page(self, url: str):
@@ -169,17 +174,17 @@ if __name__ == '__main__':
     elif platform.system() == "Linux":
         browser = Browser('drivers\chromedriver_linux')
 
-    print("--------GETTING UNIX TIMESTAMP FOR DATE--------\n")
+    print("\n-------GETTING UNIX TIMESTAMP FOR DATE-------\n")
     unix_timestamp = browser.get_unix_timestamp()
-    print("--------SUCCESS--------\n\n")
+    print("-------------------SUCCESS-------------------\n\n")
 
-    print("--------LOGGING INTO BOOKING.CARLETON.CA--------\n")
+    print("-------LOGGING INTO BOOKING.CARLETON.CA------\n")
     browser.login_booking_carleton(credentials.username, credentials.password)
-    print("--------SUCCESS--------\n\n")
+    print("-------------------SUCCESS-------------------\n\n")
 
-    print("--------ATTEMPTING TO BOOK ROOM--------\n")
+    print("-----------ATTEMPTING TO BOOK ROOM-----------\n")
     browser.book_room(args.room, unix_timestamp)
-    print("--------SUCCESS--------\n\n")
+    print("-------------------SUCCESS-------------------\n\n")
 
     print("See your bookings here: https://booking.carleton.ca/index.php?p=MyBookings&r=1")
     browser.close_browser
