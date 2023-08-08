@@ -25,12 +25,13 @@ The inspiration for this project comes from the tiresome process of needing to b
 - Pre-requisites
   - python3
   - selenium
-    - pip install selenium
+    - `pip install selenium`
   - Google Chrome version 115+
     - To check Chrome version: chrome://settings/help
     - The Windows, Linux, and MacOS ChromeDrivers for Chrome version 115.0.5790.170 can be found in drivers/ but if you are using a Chrome version older than that, you must download the compatible ChromeDriver for your version from https://chromedriver.chromium.org/downloads
   - You must make sure you have run both Google Chrome and the ChromeDriver executable for your arch at least once
+  - Update the `username` and `password` in credentials.py keeping it as a string
 - To run Autobook.py
   - `python3 Autobook.py -r [ROOM_NUMBER] -d [DATE] -t [TIME]`
   - You can run `python3 Autobook.py -h` to print the usages for a more detailed explanation of the flags
-  - You can optionally use the --duration flag to specify a booking duration
+  - You can optionally use the `--duration` flag to specify a booking duration
