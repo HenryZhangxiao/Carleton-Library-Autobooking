@@ -19,13 +19,13 @@ parser.add_argument('-d', '--date', type=str, required=True,
                           You can also type the calendar date, ie. Aug 23')
 
 parser.add_argument('-r', '--room', type=str, required=True,
-                    help='The room you want to book')
+                    help='The room number you want to book. Can also book subrooms, ie. 324A')
 
 parser.add_argument('-t', '--time', type=int, required=True,
                     help='The start time of your desired booking time in military hours, ie. 1800 = 6:00 PM')
 
 parser.add_argument('--duration', type=int, default=180, required=False,
-                    help='Desired duration of your booking in minutes. 30 minute increments; Max 180 minutes')
+                    help='Desired duration of your booking in minutes. 30 minute increments; Max 180 minutes. Default 180 minutes')
 
 args = parser.parse_args()
 
