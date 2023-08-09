@@ -29,7 +29,8 @@ The inspiration for this project comes from the tiresome process of needing to b
   - Google Chrome version 115+
     - To check Chrome version: chrome://settings/help
     - The Windows, Linux, and MacOS ChromeDrivers for Chrome version `115.0.5790.170` can be found in drivers/ but if you are using a Chrome version older than that, you must download the compatible ChromeDriver for your version from https://chromedriver.chromium.org/downloads
-  - You must make sure you have run both Google Chrome and the ChromeDriver executable for your arch at least once
+      - Apparently you may be able to use the provided ChromeDriver version with older versions of Chrome, but if you can't, follow the previous step
+  - It's recommended that you run both Google Chrome and the ChromeDriver executable for your arch at least once before using this script
   - Update the `username` and `password` for your MC1 login in credentials.py keeping it as a string
 - To run Autobook.py
   - `python3 Autobook.py -r [ROOM_NUMBER] -d [DATE] -t [TIME]`
