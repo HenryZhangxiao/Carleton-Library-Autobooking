@@ -32,6 +32,7 @@ The inspiration for this project comes from the tiresome process of needing to b
       - Apparently you may be able to use the provided ChromeDriver version with older versions of Chrome, but if you can't, follow the previous step
   - It's recommended that you run both Google Chrome and the ChromeDriver executable for your arch at least once before using this script
   - Update the `username` and `password` for your MC1 login in credentials.py keeping it as a string
+    - If you don't wish to hardcode your credentials, you can pass them in as command line arguments with `-u USERNAME -p PASSWORD`
 - To run Autobook.py
   - `python3 Autobook.py -r [ROOM_NUMBER] -d [DATE] -t [TIME]`
   - You can run `python3 Autobook.py -h` to print the usages for a more detailed explanation of the flags
