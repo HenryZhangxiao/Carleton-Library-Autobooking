@@ -34,7 +34,7 @@ The inspiration for this project comes from the tiresome process of needing to b
   - Update the `username` and `password` for your MC1 login in credentials.py keeping it as a string
     - If you don't wish to hardcode your credentials, you can pass them in as command line arguments with `-u USERNAME -p PASSWORD`
 - To run Autobook.py
-  - `python3 Autobook.py -r [ROOM_NUMBER] -d [DATE] -t [TIME]`
+  - `python3 Autobook.py -d [DATE] -r [ROOM_NUMBER] -t [TIME]`
   - You can run `python3 Autobook.py -h` to print the usages for a more detailed explanation of the flags
   - You can optionally use the `--duration` flag to specify a booking duration
   - You can optionally use the `--headless` flag to run the program headlessly
