@@ -184,13 +184,13 @@ if __name__ == '__main__':
     #Support for different architectures
     if platform.system() == "Windows":
         browser = Browser('drivers\chromedriver.exe')
-        os.chmod('drivers\chromedriver.exe', stat.stat.S_IRWXU)
+        os.chmod('drivers\chromedriver.exe', stat.S_IRWXU)
     elif platform.system() == "Darwin":
         browser = Browser('drivers/chromedriver_mac')
-        os.chmod('drivers\chromedriver_mac', stat.stat.S_IRWXU)
+        os.chmod('drivers/chromedriver_mac', stat.S_IRWXU)
     elif platform.system() == "Linux":
         browser = Browser('drivers/chromedriver_linux')
-        os.chmod('drivers/chromedriver_linux', stat.stat.S_IRWXU)
+        os.chmod('drivers/chromedriver_linux', stat.S_IRWXU)
 
     print("\n-------GETTING UNIX TIMESTAMP FOR DATE-------\n")
     try:
