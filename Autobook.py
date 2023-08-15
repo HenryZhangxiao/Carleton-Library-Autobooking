@@ -130,7 +130,7 @@ class Browser:
         self.add_input(by=By.ID, value='txtUsername', text=username)
         self.add_input(by=By.ID, value='txtPassword', text=password)
         self.click_button(by=By.ID, value='btnLogin')
-        time.sleep(4)
+        time.sleep(6)
         if self.browser.find_elements(by=By.ID, value='spanLogin'):
             raise Exception()
         browser.open_page('https://booking.carleton.ca/index.php?p=BookRoom&r=1')
