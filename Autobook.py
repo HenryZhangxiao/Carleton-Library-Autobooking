@@ -147,7 +147,6 @@ class Browser:
         select = Select(self.browser.find_element(by=By.ID,value='cboDuration'))
         #select.select_by_visible_text('03:00')
         select.select_by_value(str(args.duration))
-        time.sleep(1)
 
         #Select start time
         if (args.time/100).is_integer() == True:
@@ -165,7 +164,7 @@ class Browser:
 
         #Verify calendar button
         self.click_button(by=By.ID, value='btnAnyDate')
-        time.sleep(1)
+        time.sleep(2)
 
         #Click on calendar
         self.click_button(by=By.ID, value='day' + unix_timestamp) #Select the date
