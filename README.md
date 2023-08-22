@@ -5,6 +5,9 @@ A headless program designed to automate the process of booking Carleton Library 
 The inspiration for this project comes from the tiresome process of needing to book a room nearly every day. This program simply automates the entire process.
 
 
+https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/01ebdb33-df7a-468f-bb75-3e94d159c8aa
+
+
 #### Table of Contents
 - [Technologies Used ](#technologies)
 - [How to Run ](#run)
