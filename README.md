@@ -16,6 +16,7 @@ The inspiration for this project comes from the tiresome process of needing to b
 - Selenium
 - WebDriver
 - ChromeDriver
+- discordwebhook
 - Git
 
 
@@ -26,13 +27,16 @@ The inspiration for this project comes from the tiresome process of needing to b
   - python3
   - selenium
     - `pip install selenium`
+  - discordwebhook
+    - `pip install discordwebhook`
+    - This project contains a hardcoded Discord Webhook to a private server. To use your own webhook, just modify the `DISCORD_WEBHOOK` definition to your own url
   - Google Chrome version 115+
     - To check Chrome version: chrome://settings/help
     - The Windows, Linux, and MacOS ChromeDrivers for Chrome version `115.0.5790.170` can be found in drivers/ but if you are using a Chrome version older than that, you must download the compatible ChromeDriver for your version from https://chromedriver.chromium.org/downloads
       - Apparently you may be able to use the provided ChromeDriver version with older versions of Chrome, but if you can't, follow the previous step
   - It's recommended that you run both Google Chrome and the ChromeDriver executable for your arch at least once before using this script
-  - Update the `username` and `password` for your MC1 login in credentials.py keeping it as a string
-    - If you don't wish to hardcode your credentials, you can pass them in as command line arguments with `-u USERNAME -p PASSWORD`
+  - Update the `name` and `email` for your booking in credentials.py keeping it as a string
+    - If you don't wish to hardcode your credentials, you can pass them in as command line arguments with `-n NAME -e EMAIL`
 - To run Autobook.py
   - `python3 Autobook.py -d [DATE] -r [ROOM_NUMBER] -t [TIME]`
   - You can run `python3 Autobook.py -h` to print the usages for a more detailed explanation of the flags
