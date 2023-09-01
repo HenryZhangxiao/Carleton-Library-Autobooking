@@ -29,7 +29,7 @@ parser.add_argument('-r', '--room', type=str, required=True,
 parser.add_argument('-t', '--time', type=int, required=True,
                     help='The start time of your desired booking time in military hours, ie. 1800 = 6:00 PM')
 
-parser.add_argument('-n', '--name', type=str, required=False,
+parser.add_argument('-n', '--name', type=str, nargs='+', required=False,
                     help='Full name for booking. This will take precedence over credentials.py name')
 
 parser.add_argument('-e', '--email', type=str, required=False,
