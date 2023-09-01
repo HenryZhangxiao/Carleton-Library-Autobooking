@@ -200,7 +200,6 @@ class Browser:
 
     #Books the room
     def book_room(self, room: str, unix_timestamp: str):
-        print("unix_timestamp: ", unix_timestamp)
         browser.open_page('https://carletonu.libcal.com/r/accessible/availability?lid=2986&zone=0&gid=0&capacity=2&space=')
 
         self.click_button(by=By.ID, value='date') #Select dropdown menu
@@ -216,9 +215,7 @@ class Browser:
             start = (math.floor(args.time/100) * 60 + 30) * 60
 
         current_timestamp = int(unix_timestamp) + start
-        print("current_timestamp" , current_timestamp)
         end_timestamp = current_timestamp + args.duration * 60
-        print("end_timestamp" , end_timestamp)
         while(current_timestamp != end_timestamp):
             self.click_button(by=By.ID, value=f's{room_id}_0_{current_timestamp}')
             current_timestamp += 1800
@@ -246,14 +243,10 @@ if __name__ == '__main__':
         os.chmod('drivers/chromedriver_linux', stat.S_IRWXU)
         browser = Browser('drivers/chromedriver_linux')
 
-    print("\n-------GETTING UNIX TIMESTAMP FOR DATE-------\n")
+    print("\n-------GETTING UNIX TIMESTAMP AND DATE-------\n")
     try:
         unix_timestamp = str(int(browser.get_unix_timestamp()) + 14400)
         browser.get_date()
-        print("date: ", date)
-        #print("day ", day)
-        #print("month ", month)
-        #print("year ", year)
         print("-------------------SUCCESS-------------------\n\n\n")
     except:
         print("-----------FAILED TO GET TIMESTAMP-----------\n")
@@ -261,14 +254,14 @@ if __name__ == '__main__':
         exit()
 
     print("-----------ATTEMPTING TO BOOK ROOM-----------\n")
-    #try:
-    browser.book_room(args.room, unix_timestamp)
-    print("-------------------SUCCESS-------------------\n\n\n")
-    #except:
-    print("-------------FAILED TO BOOK ROOM-------------\n")
-    print("------ROOM MIGHT BE UNAVAILABLE TO BOOK------")
-    print("-------OR DESIRED TIMESLOT UNAVAILABLE-------\n")
-    print("---------------EXITING PROGRAM---------------\n\n")
-    exit()
+    try:
+        browser.book_room(args.room, unix_timestamp)
+        print("-------------------SUCCESS-------------------\n\n\n")
+    except:
+        print("-------------FAILED TO BOOK ROOM-------------\n")
+        print("------ROOM MIGHT BE UNAVAILABLE TO BOOK------")
+        print("-------OR DESIRED TIMESLOT UNAVAILABLE-------\n")
+        print("---------------EXITING PROGRAM---------------\n\n")
+        exit()
        
     browser.close_browser
