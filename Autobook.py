@@ -6,11 +6,13 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
 import credentials
+import room_id as room_ids
 import math
 import time
 import argparse
 import platform
 import os
+import sys
 import stat
 
 # Instantiate the parser
@@ -26,11 +28,11 @@ parser.add_argument('-r', '--room', type=str, required=True,
 parser.add_argument('-t', '--time', type=int, required=True,
                     help='The start time of your desired booking time in military hours, ie. 1800 = 6:00 PM')
 
-parser.add_argument('-u', '--username', type=str, required=False,
-                    help='Username for MC1 login. This will take precedence over credentials.py username')
+parser.add_argument('-n', '--name', type=str, required=False,
+                    help='Full name for booking. This will take precedence over credentials.py name')
 
-parser.add_argument('-p', '--password', type=str, required=False,
-                    help='Password for MC1 login. This will take precedence over credentials.py password')
+parser.add_argument('-e', '--email', type=str, required=False,
+                    help='Email for booking. This will take precedence over credentials.py email')
 
 parser.add_argument('--duration', type=int, default=180, required=False,
                     help='Desired duration of your booking in minutes. 30 minute increments; Max 180 minutes. Default 180 minutes')
@@ -40,11 +42,15 @@ parser.add_argument('--headless', action='store_true', default=False, required=F
 
 args = parser.parse_args()
 args.date = ' '.join(args.date)
-if args.username is not None and args.password is not None:
-    username, password = args.username, args.password
+if args.name is not None and args.email is not None:
+    name, email = args.name, args.email
 else:
-    username, password = credentials.username, credentials.password
-
+    name, email = credentials.name, credentials.email
+room_id = room_ids.room_ids[args.room]
+date='Test'
+day=''
+month=''
+year=''
 #print("Platform: " + platform.system())
 #print("Argument values:")
 #print("Date: " + args.date)
@@ -54,6 +60,7 @@ else:
 #print("Password: " + args.password)
 #print("Duration: " + str(args.duration))
 #print("Headless: " + str(args.headless))
+print("Room ID: " + str(room_id))
 
 class Browser:
     browser, service, options = None, None, Options()
@@ -88,45 +95,140 @@ class Browser:
         
     #Gets the unix timestamp for the date and returns it
     def get_unix_timestamp(self) -> str:
+        global date, day, month, year
         match args.date.upper():
             case "SUNDAY" | "SUN":
                 browser.open_page('https://www.unixtimesta.mp/saturday')
                 time.sleep(3)
-                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+                time.sleep(3)
+                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                day=date[0]
+                month=date[1]
+                year=date[2]
+                return timestamp
             case "MONDAY" | "MON":
                 browser.open_page('https://www.unixtimesta.mp/sunday')
                 time.sleep(3)
-                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+                time.sleep(3)
+                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                day=date[0]
+                month=date[1]
+                year=date[2]
+                return timestamp
             case "TUESDAY" | "TUE" | "TUES":
                 browser.open_page('https://www.unixtimesta.mp/monday')
                 time.sleep(3)
-                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+                time.sleep(3)
+                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                day=date[0]
+                month=date[1]
+                year=date[2]
+                return timestamp
             case "WEDNESDAY" | "WED":
                 browser.open_page('https://www.unixtimesta.mp/tuesday')
                 time.sleep(3)
-                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+                time.sleep(3)
+                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                day=date[0]
+                month=date[1]
+                year=date[2]
+                return timestamp
             case "THURSDAY" | "THU" | "THURS":
                 browser.open_page('https://www.unixtimesta.mp/wednesday')
                 time.sleep(3)
-                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+                time.sleep(3)
+                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                day=date[0]
+                month=date[1]
+                year=date[2]
+                return timestamp
             case "FRIDAY" | "FRI":
                 browser.open_page('https://www.unixtimesta.mp/thursday')
                 time.sleep(3)
-                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+                time.sleep(3)
+                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                day=date[0]
+                month=date[1]
+                year=date[2]
+                return timestamp
             case "SATURDAY" | "SAT":
                 browser.open_page('https://www.unixtimesta.mp/friday')
                 time.sleep(3)
-                return str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+                time.sleep(3)
+                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                day=date[0]
+                month=date[1]
+                year=date[2]
+                return timestamp
             case _:
                 browser.open_page('https://www.unixtimesta.mp/' + args.date.replace(" ", ""))
                 time.sleep(3)
+                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                day=date[0]
+                month=date[1]
+                year=date[2]
                 return self.browser.current_url.replace("https://www.unixtimesta.mp/", "")
+            
+    #Login to the booking site using the username and password found in credentials.py
+    def get_date(self):
+        global date, day, month, year
+        day=date[0].zfill(2)
+        match month.upper():
+            case "JANUARY" :
+                month='01'
+            case "FEBRUARY" :
+                month='02'
+            case "MARCH" :
+                month='03'
+            case "APRIL" :
+                month='04'
+            case "MAY" :
+                month='05'
+            case "JUNE" :
+                month='06'
+            case "JULY" :
+                month='07'
+            case "AUGUST" :
+                month='08'
+            case "SEPTEMBER" :
+                month='09'
+            case "OCTOBER" :
+                month='10'
+            case "NOVEMBER" :
+                month='11'
+            case "DECEMBER" :
+                month='12'
+            case _:
+                sys.exit("SOMETHING WENT WRING WITH MONTH MANIPULATION")
+        date = year + "-" + month + "-" + day
+
 
     #Login to the booking site using the username and password found in credentials.py
-    def login_booking_carleton(self, username: str, password: str):
-        browser.open_page('https://booking.carleton.ca/')
+    def open_site(self, username: str, password: str):
+        browser.open_page('https://carletonu.libcal.com/r/accessible/availability?lid=2986&zone=0&gid=0&capacity=2&space=')
         time.sleep(3)
-        self.click_button(by=By.ID, value='spanLogin')
+
+        self.click_button(by=By.ID, value='date') #Select dropdown menu
+        select = Select(self.browser.find_element(by=By.ID,value='date'))
+        select.select_by_value(date)
+
+
+
+
         self.add_input(by=By.ID, value='txtUsername', text=username)
         self.add_input(by=By.ID, value='txtPassword', text=password)
         self.click_button(by=By.ID, value='btnLogin')
@@ -138,6 +240,41 @@ class Browser:
 
     #Books the room
     def book_room(self, room: str, unix_timestamp: str):
+        print("unix_timestamp: ", unix_timestamp)
+        browser.open_page('https://carletonu.libcal.com/r/accessible/availability?lid=2986&zone=0&gid=0&capacity=2&space=')
+        time.sleep(3)
+
+        self.click_button(by=By.ID, value='date') #Select dropdown menu
+        select = Select(self.browser.find_element(by=By.ID,value='date'))
+        select.select_by_value(date)
+        self.click_button(by=By.ID, value='s-lc-submit-filters') #Select dropdown menu
+        time.sleep(2)
+
+        #Calculate seconds of time to add to 12:00AM
+        if (args.time/100).is_integer() == True:
+            start = int(args.time/100 * 60) * 60
+        else:
+            start = (math.floor(args.time/100) * 60 + 30) * 60
+
+        current_timestamp = int(unix_timestamp) + start
+        print("current_timestamp" , current_timestamp)
+        end_timestamp = current_timestamp + args.duration * 60
+        print("end_timestamp" , end_timestamp)
+        while(current_timestamp != end_timestamp):
+            self.click_button(by=By.ID, value='s'+ str(room_id) + '_0_'+str(current_timestamp))
+            current_timestamp += 1800
+
+        time.sleep(3)
+        self.click_button(by=By.ID, value='s-lc-submit-times') #Submit Times
+        time.sleep(2)
+        self.click_button(by=By.ID, value='terms_accept') #Continue
+
+        self.add_input(by=By.ID, value='fname', text=credentials.name.split(" ")[0])
+        self.add_input(by=By.ID, value='lname', text=credentials.name.split(" ")[1])
+        self.add_input(by=By.ID, value='email', text=credentials.email)
+        self.click_button(by=By.ID, value='btn-form-submit') #Submit my Booking
+        time.sleep(3)
+        exit()
         self.add_input(by=By.ID, value='listSearch', text=room) #Search for the room
         time.sleep(1)
         self.click_button(by=By.CLASS_NAME, value='SearchHighlight') #Select the room
@@ -148,7 +285,7 @@ class Browser:
         #select.select_by_visible_text('03:00')
         select.select_by_value(str(args.duration))
 
-        #Select start time
+        #Calculate seconds of time
         if (args.time/100).is_integer() == True:
             start = int(args.time/100 * 60)
         else:
@@ -193,33 +330,38 @@ if __name__ == '__main__':
 
     print("\n-------GETTING UNIX TIMESTAMP FOR DATE-------\n")
     try:
-        unix_timestamp = browser.get_unix_timestamp()
+        unix_timestamp = str(int(browser.get_unix_timestamp()) + 14400)
+        browser.get_date()
+        print("date: ", date)
+        #print("day ", day)
+        #print("month ", month)
+        #print("year ", year)
         print("-------------------SUCCESS-------------------\n\n\n")
     except:
         print("-----------FAILED TO GET TIMESTAMP-----------\n")
         print("---------------EXITING PROGRAM---------------\n\n")
         exit()
 
-    print("-------LOGGING INTO BOOKING.CARLETON.CA------\n")
-    try:
-        browser.login_booking_carleton(username, password)
-        print("-------------------SUCCESS-------------------\n\n\n")
-    except:
-        print("---------------FAILED TO LOGIN---------------")
-        print("-----------CHECK YOUR CREDENTIALS------------\n")
-        print("---------------EXITING PROGRAM---------------\n\n")
-        exit()
+#    print("-------LOGGING INTO BOOKING.CARLETON.CA------\n")
+#    try:
+#        browser.open_site(username, password)
+#        print("-------------------SUCCESS-------------------\n\n\n")
+#    except:
+#        print("---------------FAILED TO LOGIN---------------")
+#        print("-----------CHECK YOUR CREDENTIALS------------\n")
+#        print("---------------EXITING PROGRAM---------------\n\n")
+#        exit()
 
     print("-----------ATTEMPTING TO BOOK ROOM-----------\n")
-    try:
-        browser.book_room(args.room, unix_timestamp)
-        print("-------------------SUCCESS-------------------\n\n\n")
-        print("See your bookings here: https://booking.carleton.ca/index.php?p=MyBookings&r=1\n")
-    except:
-        print("-------------FAILED TO BOOK ROOM-------------\n")
-        print("------ROOM MIGHT BE UNAVAILABLE TO BOOK------")
-        print("-------OR DESIRED TIMESLOT UNAVAILABLE-------\n")
-        print("---------------EXITING PROGRAM---------------\n\n")
-        exit()
+    #try:
+    browser.book_room(args.room, unix_timestamp)
+    print("-------------------SUCCESS-------------------\n\n\n")
+    print("See your bookings here: https://booking.carleton.ca/index.php?p=MyBookings&r=1\n")
+    #except:
+    print("-------------FAILED TO BOOK ROOM-------------\n")
+    print("------ROOM MIGHT BE UNAVAILABLE TO BOOK------")
+    print("-------OR DESIRED TIMESLOT UNAVAILABLE-------\n")
+    print("---------------EXITING PROGRAM---------------\n\n")
+    exit()
        
     browser.close_browser
