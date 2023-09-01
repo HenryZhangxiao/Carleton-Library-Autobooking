@@ -244,6 +244,8 @@ class Browser:
         self.add_input(by=By.ID, value='lname', text=credentials.name.split(" ")[1])
         self.add_input(by=By.ID, value='email', text=credentials.email)
         self.click_button(by=By.ID, value='btn-form-submit') #Submit my Booking
+        if self.browser.find_elements(by=By.CLASS_NAME, value='jquery-notification-error'):
+            raise Exception()
         time.sleep(1)
 
 
@@ -278,7 +280,8 @@ if __name__ == '__main__':
     except:
         print("-------------FAILED TO BOOK ROOM-------------\n")
         print("------ROOM MIGHT BE UNAVAILABLE TO BOOK------")
-        print("-------OR DESIRED TIMESLOT UNAVAILABLE-------\n")
+        print("-------OR DESIRED TIMESLOT UNAVAILABLE-------")
+        print("--------OR EXCEEDED DAILY 6 HOUR LIMIT-------\n")
         print("---------------EXITING PROGRAM---------------\n\n")
         exit()
     try:
