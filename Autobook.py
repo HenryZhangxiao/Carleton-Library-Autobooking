@@ -5,6 +5,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
+from discordwebhook import Discord
 import credentials
 import room_id as room_ids
 import math
@@ -42,12 +43,15 @@ parser.add_argument('--headless', action='store_true', default=False, required=F
 
 args = parser.parse_args()
 args.date = ' '.join(args.date)
+args.room=args.room.upper()
 if args.name is not None and args.email is not None:
     name, email = args.name, args.email
 else:
     name, email = credentials.name, credentials.email
 room_id = room_ids.room_ids[args.room]
-date = day = month = year = ''
+date = day = month = year = discord_day = discord_month = ''
+discord_end_time=0
+DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1147262918199611484/mQyvGE3rE1MKGXpFLjKYKicyjyeV_Q7tvq3BVp9TdenHOQSk2qMohPGnHV5tiAoIA90l'
 #print("Platform: " + platform.system())
 #print("Argument values:")
 #print("Date: " + args.date)
@@ -92,7 +96,7 @@ class Browser:
         
     #Gets the unix timestamp for the date and returns it
     def get_unix_timestamp(self) -> str:
-        global date, day, month, year
+        global date, day, month, year, discord_day
         match args.date.upper():
             case "SUNDAY" | "SUN":
                 browser.open_page('https://www.unixtimesta.mp/saturday')
@@ -102,6 +106,7 @@ class Browser:
                 day=date[0]
                 month=date[1]
                 year=date[2]
+                discord_day='Sunday'
                 return timestamp
             case "MONDAY" | "MON":
                 browser.open_page('https://www.unixtimesta.mp/sunday')
@@ -111,6 +116,7 @@ class Browser:
                 day=date[0]
                 month=date[1]
                 year=date[2]
+                discord_day='Monday'
                 return timestamp
             case "TUESDAY" | "TUE" | "TUES":
                 browser.open_page('https://www.unixtimesta.mp/monday')
@@ -120,6 +126,7 @@ class Browser:
                 day=date[0]
                 month=date[1]
                 year=date[2]
+                discord_day='Tuesday'
                 return timestamp
             case "WEDNESDAY" | "WED":
                 browser.open_page('https://www.unixtimesta.mp/tuesday')
@@ -129,6 +136,7 @@ class Browser:
                 day=date[0]
                 month=date[1]
                 year=date[2]
+                discord_day='Wednesday'
                 return timestamp
             case "THURSDAY" | "THU" | "THURS":
                 browser.open_page('https://www.unixtimesta.mp/wednesday')
@@ -138,6 +146,7 @@ class Browser:
                 day=date[0]
                 month=date[1]
                 year=date[2]
+                discord_day='Thursday'
                 return timestamp
             case "FRIDAY" | "FRI":
                 browser.open_page('https://www.unixtimesta.mp/thursday')
@@ -147,6 +156,7 @@ class Browser:
                 day=date[0]
                 month=date[1]
                 year=date[2]
+                discord_day='Friday'
                 return timestamp
             case "SATURDAY" | "SAT":
                 browser.open_page('https://www.unixtimesta.mp/friday')
@@ -156,10 +166,12 @@ class Browser:
                 day=date[0]
                 month=date[1]
                 year=date[2]
+                discord_day='Saturday'
                 return timestamp
             case _:
                 browser.open_page('https://www.unixtimesta.mp/' + args.date.replace(" ", ""))
                 date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+                discord_day = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[0].split(" ")[-1]
                 day=date[0]
                 month=date[1]
                 year=date[2]
@@ -167,8 +179,9 @@ class Browser:
             
     #Login to the booking site using the username and password found in credentials.py
     def get_date(self):
-        global date, day, month, year
+        global date, day, month, year, discord_end_time, discord_month
         day=date[0].zfill(2)
+        discord_month = month
         match month.upper():
             case "JANUARY" :
                 month='01'
@@ -197,9 +210,13 @@ class Browser:
             case _:
                 sys.exit("SOMETHING WENT WRING WITH MONTH MANIPULATION")
         date = f'{year}-{month}-{day}'
-
+        #Calculate end time in military hours
+        if (args.duration/60).is_integer() == True:
+            discord_end_time = int(args.time + (args.duration/60 * 100))
+        else:
+            discord_end_time = int(args.time + (math.floor(args.duration/60) * 100 + 30))
     #Books the room
-    def book_room(self, room: str, unix_timestamp: str):
+    def book_room(self, unix_timestamp: str):
         browser.open_page('https://carletonu.libcal.com/r/accessible/availability?lid=2986&zone=0&gid=0&capacity=2&space=')
 
         self.click_button(by=By.ID, value='date') #Select dropdown menu
@@ -242,6 +259,7 @@ if __name__ == '__main__':
     elif platform.system() == "Linux":
         os.chmod('drivers/chromedriver_linux', stat.S_IRWXU)
         browser = Browser('drivers/chromedriver_linux')
+    discord = Discord(url=DISCORD_WEBHOOK)
 
     print("\n-------GETTING UNIX TIMESTAMP AND DATE-------\n")
     try:
@@ -255,7 +273,7 @@ if __name__ == '__main__':
 
     print("-----------ATTEMPTING TO BOOK ROOM-----------\n")
     try:
-        browser.book_room(args.room, unix_timestamp)
+        browser.book_room(unix_timestamp)
         print("-------------------SUCCESS-------------------\n\n\n")
     except:
         print("-------------FAILED TO BOOK ROOM-------------\n")
@@ -263,5 +281,25 @@ if __name__ == '__main__':
         print("-------OR DESIRED TIMESLOT UNAVAILABLE-------\n")
         print("---------------EXITING PROGRAM---------------\n\n")
         exit()
-       
+    try:
+        print("--------------POSTING TO DISCORD-------------\n")
+        start_time = str(args.time).zfill(4)
+        end_time = str(discord_end_time).zfill(4)
+        discord.post(
+            username=f'{credentials.name.split(" ")[0]} {credentials.name.split(" ")[1]}',
+            embeds=[
+            {
+                "title": "Carleton Libary Room Booking",
+                "fields": [
+                    {"name": "Date", "value": f'{discord_day}, {day} {discord_month} {year}', "inline": True},
+                    {"name": "Room", "value": f'{args.room}', "inline": True},
+                    {"name": "Time", "value": f'{start_time[:2]}:{start_time[2:]} -> {end_time[:2]}:{end_time[2:]}'},
+                ],
+            }
+            ],
+        )
+        print("-------------------SUCCESS-------------------\n\n\n")
+    except:
+        print("----------FAILED TO POST TO DISCORD----------\n")
+
     browser.close_browser
