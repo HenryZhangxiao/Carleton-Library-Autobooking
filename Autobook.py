@@ -47,7 +47,9 @@ args.room=args.room.upper()
 if args.name is not None and args.email is not None:
     name, email = args.name, args.email
 else:
-    name, email = credentials.name, credentials.email
+    name, email = credentials.name.split(" "), credentials.email
+if not name or not email:
+    sys.exit("\nPLEASE ADD YOUR CREDENTIALS IN CREDENTIALS.PY OR AS COMMAND LINE ARGUMENTS\n")
 room_id = room_ids.room_ids[args.room]
 date = day = month = year = discord_day = discord_month = ''
 discord_end_time=0
@@ -240,9 +242,9 @@ class Browser:
         self.click_button(by=By.ID, value='s-lc-submit-times') #Submit Times
         self.click_button(by=By.ID, value='terms_accept') #Continue
 
-        self.add_input(by=By.ID, value='fname', text=credentials.name.split(" ")[0])
-        self.add_input(by=By.ID, value='lname', text=credentials.name.split(" ")[1])
-        self.add_input(by=By.ID, value='email', text=credentials.email)
+        self.add_input(by=By.ID, value='fname', text=name[0])
+        self.add_input(by=By.ID, value='lname', text=name[1])
+        self.add_input(by=By.ID, value='email', text=email)
         self.click_button(by=By.ID, value='btn-form-submit') #Submit my Booking
         if self.browser.find_elements(by=By.CLASS_NAME, value='jquery-notification-error'):
             raise Exception()
@@ -289,7 +291,7 @@ if __name__ == '__main__':
         start_time = str(args.time).zfill(4)
         end_time = str(discord_end_time).zfill(4)
         discord.post(
-            username=f'{credentials.name.split(" ")[0]} {credentials.name.split(" ")[1]}',
+            username=f'{name[0]} {name[1]}',
             embeds=[
             {
                 "title": "Carleton Libary Room Booking",
