@@ -31,8 +31,6 @@ https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/6
 - Pre-requisites
   - python3
   - `pip3 install -r requirements.txt`
-    - selenium
-    - discordwebhook
     - This project contains a hardcoded Discord Webhook to a private server. To use your own webhook, just modify the `DISCORD_WEBHOOK` definition to your own url
   - Google Chrome version 115+
     - To check Chrome version: chrome://settings/help
