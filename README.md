@@ -26,13 +26,13 @@ https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/6
 
 <br></br>
 ## How to Run <a name="run"></a>
-- Clone this GitHub repo
+- Download the newest release from [here](https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/releases)
+  - It's not recommended to directly clone any branch as there may be unfinished work, etc.
 - Pre-requisites
   - python3
-  - selenium
-    - `pip install selenium`
-  - discordwebhook
-    - `pip install discordwebhook`
+  - `pip3 install -r requirements.txt`
+    - selenium
+    - discordwebhook
     - This project contains a hardcoded Discord Webhook to a private server. To use your own webhook, just modify the `DISCORD_WEBHOOK` definition to your own url
   - Google Chrome version 115+
     - To check Chrome version: chrome://settings/help
