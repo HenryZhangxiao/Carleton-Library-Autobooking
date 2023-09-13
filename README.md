@@ -32,9 +32,9 @@ https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/6
   - python3
   - `pip3 install -r requirements.txt`
     - This project contains a hardcoded Discord Webhook to a private server. To use your own webhook, just modify the `DISCORD_WEBHOOK` definition to your own url
-  - Google Chrome version 115+
+  - Google Chrome version 117+
     - To check Chrome version: chrome://settings/help
-    - The Windows, Linux, and MacOS ChromeDrivers for Chrome version `115.0.5790.170` can be found in drivers/ but if you are using a Chrome version older than that, you must download the compatible ChromeDriver for your version from https://chromedriver.chromium.org/downloads
+    - The Windows, Linux, and MacOS ChromeDrivers for Chrome version `117.0.5938.62` can be found in drivers/ but if you are using a Chrome version older or newer than that, you must download the compatible ChromeDriver for your version from https://chromedriver.chromium.org/downloads
       - Apparently you may be able to use the provided ChromeDriver version with older versions of Chrome, but if you can't, follow the previous step
   - It's recommended that you run both Google Chrome and the ChromeDriver executable for your arch at least once before using this script
   - Update the `name` and `email` for your booking in credentials.py keeping it as a string
