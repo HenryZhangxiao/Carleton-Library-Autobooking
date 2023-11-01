@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
 from discordwebhook import Discord
+from webdriver_auto_update.webdriver_auto_update import WebdriverAutoUpdate
 import credentials
 import room_id as room_ids
 import math
@@ -15,6 +16,18 @@ import platform
 import os
 import sys
 import stat
+import shutil
+
+# Target directory to store chromedriver
+if platform.system() == "Windows":
+    driver_directory = 'drivers\windows'
+elif platform.system() == "Darwin":
+    driver_directory = 'drivers/mac'
+elif platform.system() == "Linux":
+    driver_directory = 'drivers/linux'
+
+# Create an instance of WebdriverAutoUpdate
+driver_manager = WebdriverAutoUpdate(driver_directory)
 
 # Instantiate the parser
 parser = argparse.ArgumentParser(description='An automated booking script for Carleton Library rooms')
@@ -54,6 +67,7 @@ room_id = room_ids.room_ids[args.room]
 date = day = month = year = discord_day = discord_month = ''
 discord_end_time=0
 DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1147262918199611484/mQyvGE3rE1MKGXpFLjKYKicyjyeV_Q7tvq3BVp9TdenHOQSk2qMohPGnHV5tiAoIA90l'
+
 #print("Platform: " + platform.system())
 #print("Argument values:")
 #print("Date: " + args.date)
@@ -83,6 +97,10 @@ class Browser:
     #Closes the browser
     def close_browser(self): 
         self.browser.close()
+
+    #Closes the browser
+#    def take_screenshot(self): 
+#        self.browser.save_screenshot('screenshot.png')
 
     #Adds input [text] to element [value]
     def add_input(self, by: By, value: str, text: str):
@@ -253,17 +271,48 @@ class Browser:
 
 # Main Function
 if __name__ == '__main__':
+
+    discord = Discord(url=DISCORD_WEBHOOK)
+
+    # Call the main method to manage chromedriver
+    print("\n---ENSURING LATEST VERSION OF CHROMEDRIVER---\n")
+    driver_manager.main()
+    time.sleep(2)
+
     #Support for different architectures
     if platform.system() == "Windows":
-        os.chmod('drivers\chromedriver.exe', stat.S_IRWXU)
-        browser = Browser('drivers\chromedriver.exe')
+        try:
+            shutil.move("drivers\windows\chromedriver-win32\chromedriver.exe", "drivers\windows\chromedriver.exe")
+            try:
+                shutil.rmtree('drivers\windows\chromedriver-win32')
+            except OSError as e:
+                print("Error: %s - %s." % (e.filename, e.strerror))
+        except:
+            pass
+        os.chmod('drivers\windows\chromedriver.exe', stat.S_IRWXU)
+        browser = Browser('drivers\windows\chromedriver.exe')
     elif platform.system() == "Darwin":
-        os.chmod('drivers/chromedriver_mac', stat.S_IRWXU)
-        browser = Browser('drivers/chromedriver_mac')
+        try:
+            shutil.move("drivers/mac/chromedriver-mac-arm64/chromedriver", "drivers/mac/chromedriver")
+            try:
+                shutil.rmtree('drivers/mac/chromedriver-mac-arm64')
+            except OSError as e:
+                print("Error: %s - %s." % (e.filename, e.strerror))
+        except:
+            pass
+        os.chmod('drivers/mac/chromedriver', stat.S_IRWXU)
+        browser = Browser('drivers/mac/chromedriver')
     elif platform.system() == "Linux":
-        os.chmod('drivers/chromedriver_linux', stat.S_IRWXU)
-        browser = Browser('drivers/chromedriver_linux')
-    discord = Discord(url=DISCORD_WEBHOOK)
+        try:
+            shutil.move("drivers/linux/chromedriver-linux64/chromedriver", "drivers/linux/chromedriver")
+            try:
+                shutil.rmtree('drivers/linux/chromedriver-linux64')
+            except OSError as e:
+                print("Error: %s - %s." % (e.filename, e.strerror))
+        except:
+            pass
+        os.chmod('drivers/linux/chromedriver', stat.S_IRWXU)
+        browser = Browser('drivers/linux/chromedriver')
 
     print("\n-------GETTING UNIX TIMESTAMP AND DATE-------\n")
     try:
