@@ -254,7 +254,6 @@ class Browser:
         current_timestamp = int(unix_timestamp) + start
         end_timestamp = current_timestamp + args.duration * 60
         while(current_timestamp != end_timestamp):
-            print(current_timestamp)
             self.click_button(by=By.ID, value=f's{room_id}_0_{current_timestamp}')
             current_timestamp += 1800
 
