@@ -254,6 +254,7 @@ class Browser:
         current_timestamp = int(unix_timestamp) + start
         end_timestamp = current_timestamp + args.duration * 60
         while(current_timestamp != end_timestamp):
+            print(current_timestamp)
             self.click_button(by=By.ID, value=f's{room_id}_0_{current_timestamp}')
             current_timestamp += 1800
 
@@ -316,7 +317,7 @@ if __name__ == '__main__':
 
     print("\n-------GETTING UNIX TIMESTAMP AND DATE-------\n")
     try:
-        unix_timestamp = str(int(browser.get_unix_timestamp()) + 14400)
+        unix_timestamp = str(int(browser.get_unix_timestamp()) + 18000)
         browser.get_date()
         print("-------------------SUCCESS-------------------\n\n\n")
     except:
