@@ -11,6 +11,7 @@ import credentials
 import room_id as room_ids
 import math
 import time
+import random
 import argparse
 import platform
 import os
@@ -337,6 +338,7 @@ if __name__ == '__main__':
         exit()
     try:
         print("--------------POSTING TO DISCORD-------------\n")
+        time.sleep(random.randint(0,10)) #Sleep to circumvent discord rate limit
         start_time = str(args.time).zfill(4)
         end_time = str(discord_end_time).zfill(4)
         discord.post(
