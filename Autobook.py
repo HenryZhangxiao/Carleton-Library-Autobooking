@@ -43,11 +43,11 @@ parser.add_argument('-r', '--room', type=str, required=True,
 parser.add_argument('-t', '--time', type=int, required=True,
                     help='The start time of your desired booking time in military hours, ie. 1800 = 6:00 PM')
 
-parser.add_argument('-n', '--name', type=str, nargs='+', required=False,
-                    help='Full name for booking. This will take precedence over credentials.py name')
+parser.add_argument('-u', '--username', type=str, nargs='+', required=False,
+                    help='Username for Carleton Central. This will take precedence over credentials.py username')
 
-parser.add_argument('-e', '--email', type=str, required=False,
-                    help='Email for booking. This will take precedence over credentials.py email')
+parser.add_argument('-p', '--password', type=str, required=False,
+                    help='Password for Carleton Central. This will take precedence over credentials.py password')
 
 parser.add_argument('--duration', type=int, default=180, required=False,
                     help='Desired duration of your booking in minutes. 30 minute increments; Max 180 minutes. Default 180 minutes')
@@ -58,15 +58,16 @@ parser.add_argument('--headless', action='store_true', default=False, required=F
 args = parser.parse_args()
 args.date = ' '.join(args.date)
 args.room=args.room.upper()
-if args.name is not None and args.email is not None:
-    name, email = args.name, args.email
+if args.username is not None and args.password is not None:
+    username, password = args.username, args.password
 else:
-    name, email = credentials.name.split(" "), credentials.email
-if not name or not email:
+    username, password = credentials.username, credentials.password
+if not username or not password:
     sys.exit("\nPLEASE ADD YOUR CREDENTIALS IN CREDENTIALS.PY OR AS COMMAND LINE ARGUMENTS\n")
 room_id = room_ids.room_ids[args.room]
 date = day = month = year = discord_day = discord_month = ''
 discord_end_time=0
+name=''
 DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1147262918199611484/mQyvGE3rE1MKGXpFLjKYKicyjyeV_Q7tvq3BVp9TdenHOQSk2qMohPGnHV5tiAoIA90l'
 
 #print("Platform: " + platform.system())
@@ -199,6 +200,16 @@ class Browser:
                 return self.browser.current_url.replace("https://www.unixtimesta.mp/", "")
             
     #Login to the booking site using the username and password found in credentials.py
+    def login_carleton(self, username: str, password: str):
+        browser.open_page('https://brightspace.carleton.ca/d2l/home')
+        self.add_input(by=By.ID, value='userNameInput', text=username)
+        self.add_input(by=By.ID, value='passwordInput', text=password)
+        self.click_button(by=By.ID, value='submitButton')
+        time.sleep(3)
+        if self.browser.find_elements(by=By.ID, value='loginForm'):
+            raise Exception()
+    
+    #Login to the booking site using the username and password found in credentials.py
     def get_date(self):
         global date, day, month, year, discord_end_time, discord_month
         day=date[0].zfill(2)
@@ -234,10 +245,14 @@ class Browser:
         #Calculate end time in military hours
         if (args.duration/60).is_integer() == True:
             discord_end_time = int(args.time + (args.duration/60 * 100))
+        elif int(args.time + (math.floor(args.duration/60) * 100 + 30)) % 100 == 60:
+            discord_end_time = int(args.time + (math.floor(args.duration/60) * 100 + 30)) - 60 + 100
         else:
             discord_end_time = int(args.time + (math.floor(args.duration/60) * 100 + 30))
     #Books the room
     def book_room(self, unix_timestamp: str):
+        global name
+
         browser.open_page('https://carletonu.libcal.com/r/accessible/availability?lid=2986&zone=0&gid=0&capacity=2&space=')
 
         self.click_button(by=By.ID, value='date') #Select dropdown menu
@@ -261,9 +276,8 @@ class Browser:
         self.click_button(by=By.ID, value='s-lc-submit-times') #Submit Times
         self.click_button(by=By.ID, value='terms_accept') #Continue
 
-        self.add_input(by=By.ID, value='fname', text=name[0])
-        self.add_input(by=By.ID, value='lname', text=name[1])
-        self.add_input(by=By.ID, value='email', text=email)
+        name = self.browser.find_element(by=By.CLASS_NAME, value='s-lc-session-aware-link').text.split()[:2] #Click on the first 'Book' button
+
         self.click_button(by=By.ID, value='btn-form-submit') #Submit my Booking
         if self.browser.find_elements(by=By.CLASS_NAME, value='jquery-notification-error'):
             raise Exception()
@@ -322,6 +336,16 @@ if __name__ == '__main__':
         print("-------------------SUCCESS-------------------\n\n\n")
     except:
         print("-----------FAILED TO GET TIMESTAMP-----------\n")
+        print("---------------EXITING PROGRAM---------------\n\n")
+        exit()
+
+    print("\n-------LOGGING IN TO CARLETON CENTRAL--------\n")
+    try:
+        browser.login_carleton(username, password)
+        print("-------------------SUCCESS-------------------\n\n\n")
+    except:
+        print("---------------FAILED TO LOGIN---------------\n")
+        print("-----------PLEASE CHECK CREDENTIALS----------\n")
         print("---------------EXITING PROGRAM---------------\n\n")
         exit()
 
