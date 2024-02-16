@@ -1,2 +1,2 @@
-name=''
-email=''
+username=''
+password=''
