@@ -6,7 +6,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
 from discordwebhook import Discord
-from webdriver_auto_update.webdriver_auto_update import WebdriverAutoUpdate
+from webdriver_auto_update.chrome_app_utils import ChromeAppUtils
+from webdriver_auto_update.webdriver_manager import WebDriverManager
 import credentials
 import room_id as room_ids
 import math
@@ -28,7 +29,7 @@ elif platform.system() == "Linux":
     driver_directory = 'drivers/linux'
 
 # Create an instance of WebdriverAutoUpdate
-driver_manager = WebdriverAutoUpdate(driver_directory)
+driver_manager = WebDriverManager(driver_directory)
 
 # Instantiate the parser
 parser = argparse.ArgumentParser(description='An automated booking script for Carleton Library rooms')
@@ -297,9 +298,9 @@ if __name__ == '__main__':
     #Support for different architectures
     if platform.system() == "Windows":
         try:
-            shutil.move("drivers\windows\chromedriver-win32\chromedriver.exe", "drivers\windows\chromedriver.exe")
+            shutil.move("drivers\windows\chromedriver-win64\chromedriver.exe", "drivers\windows\chromedriver.exe")
             try:
-                shutil.rmtree('drivers\windows\chromedriver-win32')
+                shutil.rmtree('drivers\windows\chromedriver-win64')
             except OSError as e:
                 print("Error: %s - %s." % (e.filename, e.strerror))
         except:
