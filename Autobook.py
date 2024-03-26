@@ -267,7 +267,6 @@ class Browser:
             start = int(args.time/100 * 60) * 60
         else:
             start = (math.floor(args.time/100) * 60 + 30) * 60
-
         current_timestamp = int(unix_timestamp) + start
         end_timestamp = current_timestamp + args.duration * 60
         while(current_timestamp != end_timestamp):
@@ -332,7 +331,7 @@ if __name__ == '__main__':
 
     print("\n-------GETTING UNIX TIMESTAMP AND DATE-------\n")
     try:
-        unix_timestamp = str(int(browser.get_unix_timestamp()) + 18000)
+        unix_timestamp = str(int(browser.get_unix_timestamp()) + 14400)
         browser.get_date()
         print("-------------------SUCCESS-------------------\n\n\n")
     except:
