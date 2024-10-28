@@ -20,56 +20,51 @@ import sys
 import stat
 import shutil
 
-# Target directory to store chromedriver
-if platform.system() == "Windows":
-    driver_directory = 'drivers\windows'
-elif platform.system() == "Darwin":
-    driver_directory = 'drivers/mac'
-elif platform.system() == "Linux":
-    driver_directory = 'drivers/linux'
+DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1147262918199611484/mQyvGE3rE1MKGXpFLjKYKicyjyeV_Q7tvq3BVp9TdenHOQSk2qMohPGnHV5tiAoIA90l'
 
-# Create an instance of WebdriverAutoUpdate
-driver_manager = WebDriverManager(driver_directory)
-
-# Instantiate the parser
-parser = argparse.ArgumentParser(description='An automated booking script for Carleton Library rooms')
-
-parser.add_argument('-d', '--date', type=str, nargs='+', required=True,
-                    help='Date of the booking. Typing the day (ex. Monday) will book the nearest next occurrence that isn\'t today.\
-                          You can also type the calendar date, ie. Aug 23')
-
-parser.add_argument('-r', '--room', type=str, required=True,
-                    help='The room number you want to book. Can also book subrooms, ie. 324A')
-
-parser.add_argument('-t', '--time', type=int, required=True,
-                    help='The start time of your desired booking time in military hours, ie. 1800 = 6:00 PM')
-
-parser.add_argument('-u', '--username', type=str, nargs='+', required=False,
-                    help='Username for Carleton Central. This will take precedence over credentials.py username')
-
-parser.add_argument('-p', '--password', type=str, required=False,
-                    help='Password for Carleton Central. This will take precedence over credentials.py password')
-
-parser.add_argument('--duration', type=int, default=180, required=False,
-                    help='Desired duration of your booking in minutes. 30 minute increments; Max 180 minutes. Default 180 minutes')
-
-parser.add_argument('--headless', action='store_true', default=False, required=False,
-                    help='Runs the program in headless mode (Does not open the browser). Default is false')
-
-args = parser.parse_args()
-args.date = ' '.join(args.date)
-args.room=args.room.upper()
-if args.username is not None and args.password is not None:
-    username, password = args.username, args.password
-else:
-    username, password = credentials.username, credentials.password
-if not username or not password:
-    sys.exit("\nPLEASE ADD YOUR CREDENTIALS IN CREDENTIALS.PY OR AS COMMAND LINE ARGUMENTS\n")
-room_id = room_ids.room_ids[args.room]
+username = password = ''
+room_id = None
 date = day = month = year = discord_day = discord_month = ''
 discord_end_time=0
 name=''
-DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1147262918199611484/mQyvGE3rE1MKGXpFLjKYKicyjyeV_Q7tvq3BVp9TdenHOQSk2qMohPGnHV5tiAoIA90l'
+
+def initialize_parser(parser):
+    parser.add_argument('-d', '--date', type=str, nargs='+', required=True,
+                        help='Date of the booking. Typing the day (ex. Monday) will book the nearest next occurrence that isn\'t today.\
+                            You can also type the calendar date, ie. Aug 23')
+
+    parser.add_argument('-r', '--room', type=str, required=True,
+                        help='The room number you want to book. Can also book subrooms, ie. 324A')
+
+    parser.add_argument('-t', '--time', type=int, required=True,
+                        help='The start time of your desired booking time in military hours, ie. 1800 = 6:00 PM')
+
+    parser.add_argument('-u', '--username', type=str, nargs='+', required=False,
+                        help='Username for Carleton Central. This will take precedence over credentials.py username')
+
+    parser.add_argument('-p', '--password', type=str, required=False,
+                        help='Password for Carleton Central. This will take precedence over credentials.py password')
+
+    parser.add_argument('--duration', type=int, default=180, required=False,
+                        help='Desired duration of your booking in minutes. 30 minute increments; Max 180 minutes. Default 180 minutes')
+
+    parser.add_argument('--headless', action='store_true', default=False, required=False,
+                        help='Runs the program in headless mode (Does not open the browser). Default is false')
+
+def parse_args(args):
+    global username, password, room_id
+
+    args.date = ' '.join(args.date)
+    args.room=args.room.upper()
+    room_id = room_ids.room_ids[args.room]
+
+    if args.username is not None and args.password is not None:
+        username, password = args.username, args.password
+    else:
+        username, password = credentials.username, credentials.password
+    if not username or not password:
+        sys.exit("\nPLEASE ADD YOUR CREDENTIALS IN CREDENTIALS.PY OR AS COMMAND LINE ARGUMENTS\n")
+
 
 #print("Platform: " + platform.system())
 #print("Argument values:")
@@ -88,6 +83,7 @@ class Browser:
     def __init__(self, driver: str):
         self.service = Service(driver)
         self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        self.options.add_argument("--log-level=1")
         if args.headless == True:
             self.options.add_argument("--headless=new")
         self.browser = webdriver.Chrome(service=self.service, options=self.options)
@@ -120,85 +116,111 @@ class Browser:
     #Gets the unix timestamp for the date and returns it
     def get_unix_timestamp(self) -> str:
         global date, day, month, year, discord_day
-        match args.date.upper():
-            case "SUNDAY" | "SUN":
-                browser.open_page('https://www.unixtimesta.mp/saturday')
-                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
-                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
-                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
-                day=date[0]
-                month=date[1]
-                year=date[2]
-                discord_day='Sunday'
-                return timestamp
-            case "MONDAY" | "MON":
-                browser.open_page('https://www.unixtimesta.mp/sunday')
-                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
-                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
-                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
-                day=date[0]
-                month=date[1]
-                year=date[2]
-                discord_day='Monday'
-                return timestamp
-            case "TUESDAY" | "TUE" | "TUES":
-                browser.open_page('https://www.unixtimesta.mp/monday')
-                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
-                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
-                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
-                day=date[0]
-                month=date[1]
-                year=date[2]
-                discord_day='Tuesday'
-                return timestamp
-            case "WEDNESDAY" | "WED":
-                browser.open_page('https://www.unixtimesta.mp/tuesday')
-                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
-                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
-                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
-                day=date[0]
-                month=date[1]
-                year=date[2]
-                discord_day='Wednesday'
-                return timestamp
-            case "THURSDAY" | "THU" | "THURS":
-                browser.open_page('https://www.unixtimesta.mp/wednesday')
-                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
-                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
-                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
-                day=date[0]
-                month=date[1]
-                year=date[2]
-                discord_day='Thursday'
-                return timestamp
-            case "FRIDAY" | "FRI":
-                browser.open_page('https://www.unixtimesta.mp/thursday')
-                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
-                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
-                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
-                day=date[0]
-                month=date[1]
-                year=date[2]
-                discord_day='Friday'
-                return timestamp
-            case "SATURDAY" | "SAT":
-                browser.open_page('https://www.unixtimesta.mp/friday')
-                timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
-                browser.open_page('https://www.unixtimesta.mp/'+timestamp)
-                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
-                day=date[0]
-                month=date[1]
-                year=date[2]
-                discord_day='Saturday'
-                return timestamp
-            case _:
-                browser.open_page('https://www.unixtimesta.mp/' + args.date.replace(" ", ""))
-                date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
-                discord_day = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[0].split(" ")[-1]
-                day=date[0]
-                month=date[1]
-                year=date[2]
-                return self.browser.current_url.replace("https://www.unixtimesta.mp/", "")
+        day_map = {
+            "SUN" : "saturday",
+            "SUNDAY" : "saturday",
+
+            "MON" : "sunday",
+            "MONDAY" : "sunday",
+
+            "TUE" : "monday",
+            "TUES" : "monday",
+            "TUESDAY" : "monday",
+
+            "WED" : "tuesday",
+            "WEDNESDAY" : "tuesday",
+
+            "THU" : "wednesday",
+            "THURS" : "wednesday",
+            "THURSDAY" : "wednesday",
+
+            "FRI" : "thursday",
+            "FRIDAY" : "thursday",
+
+            "SAT" : "friday",
+            "SATURDAY" : "friday"
+        }
+        discord_day_map = {
+            "SUN" : "Sunday",
+            "SUNDAY" : "Sunday",
+
+            "MON" : "Monday",
+            "MONDAY" : "Monday",
+
+            "TUE" : "Tuesday",
+            "TUES" : "Tuesday",
+            "TUESDAY" : "Tuesday",
+
+            "WED" : "Wednesday",
+            "WEDNESDAY" : "Wednesday",
+
+            "THU" : "Thursday",
+            "THURS" : "Thursday",
+            "THURSDAY" : "Thursday",
+
+            "FRI" : "Friday",
+            "FRIDAY" : "Friday",
+
+            "SAT" : "Saturday",
+            "SATURDAY" : "Saturday"
+        }
+        # date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+        # day=date[0]
+        # month=date[1]
+        # year=date[2]
+
+        if args.date.upper() in day_map:
+            weekday = day_map[args.date.upper()]
+            browser.open_page(f'https://www.unixtimesta.mp/{weekday}')
+            date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+            day=date[0]
+            month=date[1]
+            year=date[2]
+            timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 86400)
+            browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+            discord_day = discord_day_map[args.date.upper()]
+            return timestamp
+        else:
+            browser.open_page('https://www.unixtimesta.mp/' + args.date.replace(" ", ""))
+            date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
+            day=date[0]
+            month=date[1]
+            year=date[2]
+            discord_day = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[0].split(" ")[-1]
+            return self.browser.current_url.replace("https://www.unixtimesta.mp/", "")
+
+        # match args.date.upper():
+        #     case "SUNDAY" | "SUN":
+        #         #browser.open_page('https://www.unixtimesta.mp/saturday')
+                
+        #         return timestamp
+        #     case "MONDAY" | "MON":
+        #         #browser.open_page('https://www.unixtimesta.mp/sunday')
+        #         discord_day='Monday'
+        #         return timestamp
+        #     case "TUESDAY" | "TUE" | "TUES":
+        #         #browser.open_page('https://www.unixtimesta.mp/monday')
+        #         discord_day='Tuesday'
+        #         return timestamp
+        #     case "WEDNESDAY" | "WED":
+        #         #browser.open_page('https://www.unixtimesta.mp/tuesday')
+        #         discord_day='Wednesday'
+        #         return timestamp
+        #     case "THURSDAY" | "THU" | "THURS":
+        #         #browser.open_page('https://www.unixtimesta.mp/wednesday')
+        #         discord_day='Thursday'
+        #         return timestamp
+        #     case "FRIDAY" | "FRI":
+        #         #browser.open_page('https://www.unixtimesta.mp/thursday')
+        #         discord_day='Friday'
+        #         return timestamp
+        #     case "SATURDAY" | "SAT":
+        #         #browser.open_page('https://www.unixtimesta.mp/friday')
+        #         discord_day='Saturday'
+        #         return timestamp
+        #     case _:
+        #         discord_day = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[0].split(" ")[-1]
+        #         return self.browser.current_url.replace("https://www.unixtimesta.mp/", "")
             
     #Login to the booking site using the username and password found in credentials.py
     def login_carleton(self, username: str, password: str):
@@ -286,8 +308,28 @@ class Browser:
 
 # Main Function
 if __name__ == '__main__':
+    # Instantiate the parser
+    parser = argparse.ArgumentParser(description='An automated booking script for Carleton Library rooms')
 
     discord = Discord(url=DISCORD_WEBHOOK)
+
+    # Initialize argparse
+    initialize_parser(parser)
+
+    # Parse the args
+    args = parser.parse_args()
+    parse_args(args)
+    
+    # Target directory to store chromedriver
+    if platform.system() == "Windows":
+        driver_directory = 'drivers\windows'
+    elif platform.system() == "Darwin":
+        driver_directory = 'drivers/mac'
+    elif platform.system() == "Linux":
+        driver_directory = 'drivers/linux'
+
+    # Create an instance of WebdriverAutoUpdate
+    driver_manager = WebDriverManager(driver_directory)
 
     # Call the main method to manage chromedriver
     print("\n---ENSURING LATEST VERSION OF CHROMEDRIVER---\n")
