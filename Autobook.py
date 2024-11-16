@@ -102,8 +102,8 @@ class Browser:
         self.browser.close()
 
     # Takes a screenshot
-#    def take_screenshot(self): 
-#        self.browser.save_screenshot('screenshot.png')
+    #def take_screenshot(self): 
+    #    self.browser.save_screenshot('screenshot.png')
 
     # Adds input [text] to element [value]
     def add_input(self, by: By, value: str, text: str):
@@ -116,33 +116,38 @@ class Browser:
         button = self.browser.find_element(by=by, value=value)
         button.click()
         time.sleep(1)
-        
-    # Gets the unix timestamp for the date and returns it (12:00AM local time)
+
+    '''
+    Gets the unix timestamp for the date and returns it (12:00AM EST)
+    The day is mapped to the previous day because the unix timestamp website will only reliably get the next week when fed the previous 'day'.
+    Therefore if given a weekday, add 29 hours in seconds to the timestamp. 24 hours (to make up for the difference in mapped time) and 5 hours (to make up the UTC -> EST difference)
+    If given a specific date, only add 5 hours in seconds to make up for the time zone difference
+    '''
     def get_unix_timestamp(self) -> str:
         global date, day, month, year, discord_day
         day_map = {
-            "SUN" : "sunday",
-            "SUNDAY" : "sunday",
+            "SUN" : "saturday",
+            "SUNDAY" : "saturday",
 
-            "MON" : "monday",
-            "MONDAY" : "monday",
+            "MON" : "sunday",
+            "MONDAY" : "sunday",
 
-            "TUE" : "tuesday",
-            "TUES" : "tuesday",
-            "TUESDAY" : "tuesday",
+            "TUE" : "monday",
+            "TUES" : "monday",
+            "TUESDAY" : "monday",
 
-            "WED" : "wednesday",
-            "WEDNESDAY" : "wednesday",
+            "WED" : "tuesday",
+            "WEDNESDAY" : "tuesday",
 
-            "THU" : "thursday",
-            "THURS" : "thursday",
-            "THURSDAY" : "thursday",
+            "THU" : "wednesday",
+            "THURS" : "wednesday",
+            "THURSDAY" : "wednesday",
 
-            "FRI" : "friday",
-            "FRIDAY" : "friday",
+            "FRI" : "thursday",
+            "FRIDAY" : "thursday",
 
-            "SAT" : "saturday",
-            "SATURDAY" : "saturday"
+            "SAT" : "friday",
+            "SATURDAY" : "friday"
         }
         discord_day_map = {
             "SUN" : "Sunday",
@@ -172,14 +177,14 @@ class Browser:
         if args.date.upper() in day_map:
             weekday = day_map[args.date.upper()]
             browser.open_page(f'https://www.unixtimesta.mp/{weekday}')
-           # timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 18000)
-            #browser.open_page('https://www.unixtimesta.mp/'+timestamp)
+            timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 104400)
+            browser.open_page('https://www.unixtimesta.mp/'+timestamp)
             discord_day = discord_day_map[args.date.upper()]
         else:
             browser.open_page('https://www.unixtimesta.mp/' + args.date.replace(" ", ""))
             discord_day = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[0].split(" ")[-1]
-        
-        timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 18000)
+            timestamp = str(int(self.browser.current_url.replace("https://www.unixtimesta.mp/", "")) + 18000)
+
         date = self.browser.find_element(by=By.ID, value="utctime").text.split(", ")[1].split(" ")
         day=date[0]
         month=date[1]
@@ -221,7 +226,7 @@ class Browser:
         else:
             month = month_map[month.upper()]
         date = f'{year}-{month}-{day}'
-        
+
         # Calculate end time in military hours
         if (args.duration/60).is_integer() == True:
             discord_end_time = int(args.time + (args.duration/60 * 100))
@@ -236,10 +241,10 @@ class Browser:
 
         browser.open_page('https://carletonu.libcal.com/r/accessible/availability?lid=2986&zone=0&gid=0&capacity=2&space=')
 
-        self.click_button(by=By.ID, value='date') #Select dropdown menu
+        self.click_button(by=By.ID, value='date')  # Select dropdown menu
         select = Select(self.browser.find_element(by=By.ID,value='date'))
         select.select_by_value(date)
-        self.click_button(by=By.ID, value='s-lc-submit-filters') #Select dropdown menu
+        self.click_button(by=By.ID, value='s-lc-submit-filters')  # Select dropdown menu
         time.sleep(2)
 
         # Calculate seconds of time to add to 12:00AM
@@ -255,12 +260,12 @@ class Browser:
             self.click_button(by=By.ID, value=f's{room_id}_0_{current_timestamp}')
             current_timestamp += 1800
 
-        self.click_button(by=By.ID, value='s-lc-submit-times') # Submit Times
-        self.click_button(by=By.ID, value='terms_accept') # Continue
+        self.click_button(by=By.ID, value='s-lc-submit-times')  # Submit Times
+        self.click_button(by=By.ID, value='terms_accept')  # Continue
 
-        name = self.browser.find_element(by=By.CLASS_NAME, value='s-lc-session-aware-link').text.split()[:2] # Click on the first 'Book' button
+        name = self.browser.find_element(by=By.CLASS_NAME, value='s-lc-session-aware-link').text.split()[:2]  # Click on the first 'Book' button
 
-        self.click_button(by=By.ID, value='btn-form-submit') # Submit my Booking
+        self.click_button(by=By.ID, value='btn-form-submit')  # Submit my Booking
         if self.browser.find_elements(by=By.CLASS_NAME, value='jquery-notification-error'):
             raise Exception()
         time.sleep(1)
@@ -298,7 +303,7 @@ if __name__ == '__main__':
     driver_manager.main()
     time.sleep(2)
 
-    #Support for different architectures
+    # Support for different architectures
     if platform.system() == "Windows":
         try:
             shutil.move("drivers\windows\chromedriver-win64\chromedriver.exe", "drivers\windows\chromedriver.exe")
@@ -364,7 +369,7 @@ if __name__ == '__main__':
         exit()
     try:
         print(f"{'POSTING TO DISCORD':-^{PRINTING_PADDING}}\n")
-        time.sleep(random.randint(0,10)) #Sleep to circumvent discord rate limit
+        time.sleep(random.randint(0,10))  # Sleep to circumvent discord rate limit
         start_time = str(args.time).zfill(4)
         end_time = str(discord_end_time).zfill(4)
         discord.post(
