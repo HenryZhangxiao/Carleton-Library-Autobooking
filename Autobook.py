@@ -19,8 +19,7 @@ import sys
 import stat
 import shutil
 
-DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1147262918199611484/mQyvGE3rE1MKGXpFLjKYKicyjyeV_Q7tvq3BVp9TdenHOQSk2qMohPGnHV5tiAoIA90l'
-
+DISCORD_WEBHOOK = ''
 username = password = ''
 room_id = None
 date = day = month = year = discord_day = discord_month = ''
@@ -51,10 +50,13 @@ def initialize_parser(parser):
                         help='Runs the program in headless mode (Does not open the browser). Default is false')
 
 def parse_args(args):
-    global username, password, room_id
+    global username, password, room_id, DISCORD_WEBHOOK
 
     args.date = ' '.join(args.date)
     args.room=args.room.upper()
+
+    if credentials.DISCORD_WEBHOOK:
+        DISCORD_WEBHOOK = credentials.DISCORD_WEBHOOK
     
     if args.room not in room_ids.room_ids:
         sys.exit("\nROOM DOES NOT EXIST. PLEASE CHOOSE A DIFFERENT ROOM\n")
@@ -266,9 +268,8 @@ class Browser:
 
 # Main Function
 if __name__ == '__main__':
-    # Instantiate the parser and discord webhook
+    # Instantiate the parser
     parser = argparse.ArgumentParser(description='An automated booking script for Carleton Library rooms')
-    discord = Discord(url=DISCORD_WEBHOOK)
     PRINTING_PADDING = 45
 
     # Initialize argparse
@@ -277,6 +278,9 @@ if __name__ == '__main__':
     # Parse the args
     args = parser.parse_args()
     parse_args(args)
+
+    # Instantiate the discord webhook
+    discord = Discord(url=DISCORD_WEBHOOK)
     
     # Target directory to store chromedriver
     if platform.system() == "Windows":
