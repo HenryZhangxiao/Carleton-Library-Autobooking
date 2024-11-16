@@ -44,5 +44,7 @@ https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/6
   - You can run `python3 Autobook.py -h` to print the usages for a more detailed explanation of the flags
   - You can optionally use the `--duration` flag to specify a booking duration
   - You can optionally use the `--headless` flag to run the program headlessly
+  - If you input a weekday like `Monday`, the script will attempt to book for next `Monday`.
+  - If you input a specific date like `Nov 23`, the script will book that exact day.
   - An example command if you were trying to book room 570 at 10:00 AM for next Monday:
-      - `python3 Autobook.py -d monday -r 570 -t 1000 --headless`
+    - `python3 Autobook.py -d monday -r 570 -t 1000 --headless`
