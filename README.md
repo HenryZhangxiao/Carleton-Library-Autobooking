@@ -32,7 +32,7 @@ https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/6
 - Pre-requisites
   - python3
   - `pip3 install -r requirements.txt`
-    - This project contains a hardcoded Discord Webhook to a private server. To use your own webhook, just modify the `DISCORD_WEBHOOK` definition to your own url
+    - This project contains an optional Discord Webhook to post room bookings to a private server. To use your own webhook, just modify the `DISCORD_WEBHOOK` definition in `credentials.py` to your own url
   - Google Chrome
     - The Windows, Linux, and MacOS ChromeDrivers can be found in drivers/ and should auto update upon script runtime but if anything fails you can download the compatible ChromeDriver for your arch from https://chromedriver.chromium.org/downloads
     - If the script fails to run it's possible your Chrome version is out of date. Make sure the chrome version is at least the ChromeDriver version or newer
