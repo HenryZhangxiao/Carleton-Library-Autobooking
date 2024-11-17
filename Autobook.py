@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from discordwebhook import Discord
 from webdriver_auto_update.chrome_app_utils import ChromeAppUtils
 from webdriver_auto_update.webdriver_manager import WebDriverManager
+from enum import Enum
 import credentials
 import room_id as room_ids
 import time
@@ -18,6 +19,17 @@ import os
 import sys
 import stat
 import shutil
+
+class Status(Enum):
+    SUCCESS = 0
+    ERROR = 1
+    INVALID_ROOM = 2
+    NO_CREDENTIALS = 3
+
+
+def exit_program(message, code):
+    print(message, file=sys.stderr)  # Print message to stderr
+    sys.exit(code)
 
 DISCORD_WEBHOOK = ''
 username = password = ''
@@ -59,7 +71,9 @@ def parse_args(args):
         DISCORD_WEBHOOK = credentials.DISCORD_WEBHOOK
     
     if args.room not in room_ids.room_ids:
-        sys.exit("\nROOM DOES NOT EXIST. PLEASE CHOOSE A DIFFERENT ROOM\n")
+        message = "\nROOM DOES NOT EXIST. PLEASE CHOOSE A DIFFERENT ROOM\n"
+        exit_program(message, Status.INVALID_ROOM.value)
+        #sys.exit("\nROOM DOES NOT EXIST. PLEASE CHOOSE A DIFFERENT ROOM\n")
     else:
         room_id = room_ids.room_ids[args.room]
 
