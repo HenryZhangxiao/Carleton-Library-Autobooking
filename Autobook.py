@@ -73,7 +73,6 @@ def parse_args(args):
     if args.room not in room_ids.room_ids:
         message = "\nROOM DOES NOT EXIST. PLEASE CHOOSE A DIFFERENT ROOM\n"
         exit_program(message, Status.INVALID_ROOM.value)
-        #sys.exit("\nROOM DOES NOT EXIST. PLEASE CHOOSE A DIFFERENT ROOM\n")
     else:
         room_id = room_ids.room_ids[args.room]
 
@@ -82,7 +81,8 @@ def parse_args(args):
     else:
         username, password = credentials.username, credentials.password
     if not username or not password:
-        sys.exit("\nPLEASE ADD YOUR CREDENTIALS IN CREDENTIALS.PY OR AS COMMAND LINE ARGUMENTS\n")
+        message = "\nPLEASE ADD YOUR CREDENTIALS IN CREDENTIALS.PY OR AS COMMAND LINE ARGUMENTS\n"
+        exit_program(message, Status.NO_CREDENTIALS.value)
 
 #print("Platform: " + platform.system())
 #print("Argument values:")
