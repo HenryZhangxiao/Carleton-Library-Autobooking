@@ -23,9 +23,13 @@ import shutil
 class Status(Enum):
     SUCCESS = 0
     ERROR = 1
-    INVALID_ROOM = 2
-    NO_CREDENTIALS = 3
-
+    ERR_INVALID_ROOM = 2
+    ERR_NO_CREDENTIALS = 3
+    ERR_MONTH_MANUPULATION = 4
+    ERR_UNIX_TIMESTAMP = 5
+    ERR_CARLETON_LOGIN = 6
+    ERR_BOOK_ROOM = 7
+    ERR_DISCORD_POST = 8
 
 def exit_program(message, code):
     print(message, file=sys.stderr)  # Print message to stderr
@@ -72,7 +76,7 @@ def parse_args(args):
     
     if args.room not in room_ids.room_ids:
         message = "\nROOM DOES NOT EXIST. PLEASE CHOOSE A DIFFERENT ROOM\n"
-        exit_program(message, Status.INVALID_ROOM.value)
+        exit_program(message, Status.ERR_INVALID_ROOM.value)
     else:
         room_id = room_ids.room_ids[args.room]
 
@@ -82,7 +86,7 @@ def parse_args(args):
         username, password = credentials.username, credentials.password
     if not username or not password:
         message = "\nPLEASE ADD YOUR CREDENTIALS IN CREDENTIALS.PY OR AS COMMAND LINE ARGUMENTS\n"
-        exit_program(message, Status.NO_CREDENTIALS.value)
+        exit_program(message, Status.ERR_NO_CREDENTIALS.value)
 
 #print("Platform: " + platform.system())
 #print("Argument values:")
@@ -236,7 +240,8 @@ class Browser:
         }
 
         if month.upper() not in month_map:
-            sys.exit("SOMETHING WENT WRONG WITH MONTH MANIPULATION")
+            message = "SOMETHING WENT WRONG WITH MONTH MANIPULATION"
+            exit_program(message, Status.ERR_MONTH_MANUPULATION.value)
         else:
             month = month_map[month.upper()]
         date = f'{year}-{month}-{day}'
@@ -352,6 +357,8 @@ if __name__ == '__main__':
         os.chmod('drivers/linux/chromedriver', stat.S_IRWXU)
         browser = Browser('drivers/linux/chromedriver')
     
+    # Start the booking procedure
+    # Get the unix timestamp
     print(f"\n{'GETTING UNIX TIMESTAMP AND DATE':-^{PRINTING_PADDING}}\n")
     try:
         unix_timestamp = browser.get_unix_timestamp()
@@ -360,7 +367,9 @@ if __name__ == '__main__':
     except:
         print(f"{'FAILED TO GET TIMESTAMP':-^{PRINTING_PADDING}}\n")
         print(f"{'EXITING PROGRAM':-^{PRINTING_PADDING}}\n\n")
-        exit()
+        sys.exit(Status.ERR_UNIX_TIMESTAMP.value)
+
+    # Log in to carleton central (library booking system)
     print(f"{'LOGGING IN TO CARLETON CENTRAL':-^{PRINTING_PADDING}}\n")
     try:
         browser.login_carleton(username, password)
@@ -369,7 +378,9 @@ if __name__ == '__main__':
         print(f"{'FAILED TO LOGIN':-^{PRINTING_PADDING}}\n")
         print(f"{'PLEASE CHECK CREDENTIALS':-^{PRINTING_PADDING}}\n")
         print(f"{'EXITING PROGRAM':-^{PRINTING_PADDING}}\n\n")
-        exit()
+        sys.exit(Status.ERR_CARLETON_LOGIN.value)
+
+    # Attempt to book the room
     print(f"{'ATTEMPTING TO BOOK ROOM':-^{PRINTING_PADDING}}\n")
     try:
         browser.book_room(unix_timestamp)
@@ -380,7 +391,9 @@ if __name__ == '__main__':
         print(f"{'OR DESIRED TIMESLOT UNAVAILABLE':-^{PRINTING_PADDING}}")
         print(f"{'OR EXCEEDED DAILY 6 HOUR LIMIT':-^{PRINTING_PADDING}}\n")
         print(f"{'EXITING PROGRAM':-^{PRINTING_PADDING}}\n\n")
-        exit()
+        sys.exit(Status.ERR_BOOK_ROOM.value)
+
+    # Attempt to post the booking details to Discord
     try:
         print(f"{'POSTING TO DISCORD':-^{PRINTING_PADDING}}\n")
         time.sleep(random.randint(0,10))  # Sleep to circumvent discord rate limit
@@ -402,5 +415,7 @@ if __name__ == '__main__':
         print(f"{'SUCCESS':-^{PRINTING_PADDING}}\n\n\n")
     except:
         print(f"{'FAILED TO POST TO DISCORD':-^{PRINTING_PADDING}}\n\n")
+        sys.exit(Status.ERR_DISCORD_POST.value)
 
     browser.close_browser
+    sys.exit(Status.SUCCESS.value)
