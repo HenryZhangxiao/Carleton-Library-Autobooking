@@ -64,6 +64,9 @@ def initialize_parser(parser):
 
     parser.add_argument('--headless', action='store_true', default=False, required=False,
                         help='Runs the program in headless mode (Does not open the browser). Default is false')
+    
+    parser.add_argument('--rpi', action='store_true', default=False, required=False,
+                        help='Include if running on a Raspberry Pi. Needed since RPi uses Chromium. Default is false')
 
 def parse_args(args):
     global username, password, room_id, DISCORD_WEBHOOK
@@ -318,9 +321,10 @@ if __name__ == '__main__':
     driver_manager = WebDriverManager(driver_directory)
 
     # Call the main method to manage chromedriver
-    print(f"\n{'ENSURING LATEST VERSION OF CHROMEDRIVER':-^{PRINTING_PADDING}}\n")
-    driver_manager.main()
-    time.sleep(2)
+    if not args.rpi:
+        print(f"\n{'ENSURING LATEST VERSION OF CHROMEDRIVER':-^{PRINTING_PADDING}}\n")
+        driver_manager.main()
+        time.sleep(2)
 
     # Support for different architectures
     if platform.system() == "Windows":
@@ -346,16 +350,20 @@ if __name__ == '__main__':
         os.chmod('drivers/mac/chromedriver', stat.S_IRWXU)
         browser = Browser('drivers/mac/chromedriver')
     elif platform.system() == "Linux":
-        try:
-            shutil.move("drivers/linux/chromedriver-linux64/chromedriver", "drivers/linux/chromedriver")
+        if args.rpi:
+            os.chmod('drivers/pi/chromedriver', stat.S_IRWXU)
+            browser = Browser('drivers/pi/chromedriver')
+        else:
             try:
-                shutil.rmtree('drivers/linux/chromedriver-linux64')
-            except OSError as e:
-                print("Error: %s - %s." % (e.filename, e.strerror))
-        except:
-            pass
-        os.chmod('drivers/linux/chromedriver', stat.S_IRWXU)
-        browser = Browser('drivers/linux/chromedriver')
+                shutil.move("drivers/linux/chromedriver-linux64/chromedriver", "drivers/linux/chromedriver")
+                try:
+                    shutil.rmtree('drivers/linux/chromedriver-linux64')
+                except OSError as e:
+                    print("Error: %s - %s." % (e.filename, e.strerror))
+            except:
+                pass
+            os.chmod('drivers/linux/chromedriver', stat.S_IRWXU)
+            browser = Browser('drivers/linux/chromedriver')
     
     # Start the booking procedure
     # Get the unix timestamp
