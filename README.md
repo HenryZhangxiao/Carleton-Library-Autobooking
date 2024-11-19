@@ -9,9 +9,11 @@ https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/6
 
 ![image](https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/c8d2dee2-45f9-4389-addb-d882f46eb5b0)
 
+<br><br>
 #### Table of Contents
 - [Technologies Used ](#technologies)
 - [How to Run ](#run)
+- [Notes ](#notes)
 
 
 <br></br>
@@ -48,3 +50,8 @@ https://github.com/HenryZhangxiao/Carleton-Library-Autobooking/assets/44578113/6
   - If you input a specific date like `Nov 23`, the script will book that exact day.
   - An example command if you were trying to book room 570 at 10:00 AM for next Monday:
     - `python3 Autobook.py -d monday -r 570 -t 1000 --headless`
+
+
+<br></br>
+## Notes <a name="notes"></a>
+- This script has a dedicated [Discord bot](https://github.com/HenryZhangxiao/Carleton-Library-Autobooking-Bot) to run this script at will with 24/7 uptime
